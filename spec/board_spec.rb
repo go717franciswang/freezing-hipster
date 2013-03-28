@@ -45,7 +45,65 @@ describe "Board" do
     board[Coordinate.new(0,5)].must_equal jewel
   end
 
-  it "can reduce connected jewels of the same color" do
+  describe "when there are connected jewels of the same color" do
 
+    before do
+      @jewels = []
+      5.times { @jewels << Jewel.new(0) }
+    end
+
+    it "can reduce horizontally connected jewels" do
+      board[Coordinate.new(0,5)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+      board[Coordinate.new(2,5)] = @jewels.pop
+      board[Coordinate.new(3,5)] = @jewels.pop
+
+      board.reduce
+      board.each_coordinate do |coor|
+        board[coor].must_be_nil
+      end
+    end
+
+    it "can reduce vertically connected jewels" do
+      board[Coordinate.new(1,3)] = @jewels.pop
+      board[Coordinate.new(1,4)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+
+      board.reduce
+      board.each_coordinate do |coor|
+        board[coor].must_be_nil
+      end
+    end
+
+    it "can reduce both horizontally and vertically connected jewels" do
+      board[Coordinate.new(1,3)] = @jewels.pop
+      board[Coordinate.new(1,4)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+      board[Coordinate.new(0,5)] = @jewels.pop
+      board[Coordinate.new(2,5)] = @jewels.pop
+
+      board.reduce
+      board.each_coordinate do |coor|
+        board[coor].must_be_nil
+      end
+    end
+
+    it "can reduce connected jewels after landing" do
+      diff_color_jewels = []
+      3.times { diff_color_jewels << Jewel.new(1) }
+
+      board[Coordinate.new(0,5)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+      board[Coordinate.new(2,5)] = @jewels.pop
+      board[Coordinate.new(1,4)] = diff_color_jewels.pop
+      board[Coordinate.new(2,4)] = diff_color_jewels.pop
+      board[Coordinate.new(3,5)] = diff_color_jewels.pop
+
+      board.reduce
+      board.each_coordinate do |coor|
+        board[coor].must_be_nil
+      end
+    end
   end
+
 end
