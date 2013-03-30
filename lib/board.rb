@@ -1,5 +1,6 @@
 #!/usr/bin/ruby 
 
+require "set"
 require_relative "./coordinate"
 
 class Board
@@ -83,7 +84,7 @@ class Board
         end
 
         if connected_range.length >= 3
-          connected_ranges += connected_range 
+          connected_ranges << connected_range 
         end
         connected_range = []
       end
@@ -100,7 +101,7 @@ class Board
         end
 
         if connected_range.length >= 3
-          connected_ranges += connected_range 
+          connected_ranges << connected_range 
         end
         connected_range = []
       end
@@ -108,7 +109,37 @@ class Board
     end
 
     unless connected_ranges.empty?
-      self.remove_jewels connected_ranges
+      remove_set = Set.new
+      keep_set = Set.new
+      explode_set = Set.new
+
+      connected_ranges.each do |connected_range|
+        remove_set.merge(connected_range)
+
+        connected_range.each do |coor|
+          case self[coor].type
+          when :power
+          when :hyper
+          end
+        end
+
+        case connected_range.length
+        when 3
+        when 4
+          #TODO find out which jewel becomes a power jewel
+          new_power_jewel_coor = connected_range[1]
+          self[new_power_jewel_coor].type = :power
+          keep_set << new_power_jewel_coor
+        when 5
+          new_hyper_jewel_coor = connected_range[2]
+          self[new_hyper_jewel_coor].type = :hyper
+          keep_set << new_hyper_jewel_coor
+        else
+          raise "Cannot handle #{connected_range.length} connected jewels"
+        end
+      end
+
+      self.remove_jewels remove_set.subtract(keep_set)
       self.reduce
     end
   end
@@ -125,5 +156,19 @@ class Board
     coordinates.each do |coor|
       self[coor] = nil
     end
+  end
+
+  def get_jewel_count(jewel)
+    count = 0
+    self.each_coordinate do |coor|
+      if self[coor] == jewel
+        count += 1
+      end
+    end
+    count
+  end
+
+  def get_empty_count
+    self.get_jewel_count(nil)
   end
 end

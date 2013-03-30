@@ -14,14 +14,14 @@ describe "Board" do
     end
   end
 
-  it "can place jewel at a location on board" do
+  it "should place jewel at a location on board" do
     jewel = Jewel.new(1)
     coor = Coordinate.new(0,0)
     board[coor] = jewel
     board[coor].must_equal jewel
   end
 
-  it "can swap position of 2 jewels" do
+  it "should swap position of 2 jewels" do
     jewel1 = Jewel.new(0)
     jewel2 = Jewel.new(1)
 
@@ -35,7 +35,7 @@ describe "Board" do
     board[coor2].must_equal jewel1
   end
 
-  it "can land jewels when the it is empty below" do
+  it "should land jewels when the it is empty below" do
     jewel = Jewel.new(0)
     coor = Coordinate.new(0,0)
     board[coor] = jewel
@@ -52,30 +52,25 @@ describe "Board" do
       5.times { @jewels << Jewel.new(0) }
     end
 
-    it "can reduce horizontally connected jewels" do
+    it "should reduce horizontally connected jewels" do
       board[Coordinate.new(0,5)] = @jewels.pop
       board[Coordinate.new(1,5)] = @jewels.pop
       board[Coordinate.new(2,5)] = @jewels.pop
-      board[Coordinate.new(3,5)] = @jewels.pop
 
       board.reduce
-      board.each_coordinate do |coor|
-        board[coor].must_be_nil
-      end
+      board.get_empty_count.must_equal 5 * 6
     end
 
-    it "can reduce vertically connected jewels" do
+    it "should reduce vertically connected jewels" do
       board[Coordinate.new(1,3)] = @jewels.pop
       board[Coordinate.new(1,4)] = @jewels.pop
       board[Coordinate.new(1,5)] = @jewels.pop
 
       board.reduce
-      board.each_coordinate do |coor|
-        board[coor].must_be_nil
-      end
+      board.get_empty_count.must_equal 5 * 6
     end
 
-    it "can reduce both horizontally and vertically connected jewels" do
+    it "should reduce both horizontally and vertically connected jewels" do
       board[Coordinate.new(1,3)] = @jewels.pop
       board[Coordinate.new(1,4)] = @jewels.pop
       board[Coordinate.new(1,5)] = @jewels.pop
@@ -83,12 +78,10 @@ describe "Board" do
       board[Coordinate.new(2,5)] = @jewels.pop
 
       board.reduce
-      board.each_coordinate do |coor|
-        board[coor].must_be_nil
-      end
+      board.get_empty_count.must_equal 5 * 6
     end
 
-    it "can reduce connected jewels after landing" do
+    it "should reduce connected jewels after landing" do
       diff_color_jewels = []
       3.times { diff_color_jewels << Jewel.new(1) }
 
@@ -100,10 +93,35 @@ describe "Board" do
       board[Coordinate.new(3,5)] = diff_color_jewels.pop
 
       board.reduce
-      board.each_coordinate do |coor|
-        board[coor].must_be_nil
-      end
+      board.get_empty_count.must_equal 5 * 6
+    end
+
+    it "should reduce 4 jewels to 1 power jewel" do
+      board[Coordinate.new(0,5)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+      board[Coordinate.new(2,5)] = @jewels.pop
+      board[Coordinate.new(3,5)] = @jewels.pop
+
+      board.reduce
+      board.get_empty_count.must_equal 5 * 6 - 1
+      board[Coordinate.new(1,5)].type.must_equal :power
+    end
+
+    it "should reduce 5 jewels to 1 hyper jewel in the middle" do
+      board[Coordinate.new(0,5)] = @jewels.pop
+      board[Coordinate.new(1,5)] = @jewels.pop
+      board[Coordinate.new(2,5)] = @jewels.pop
+      board[Coordinate.new(3,5)] = @jewels.pop
+      board[Coordinate.new(4,5)] = @jewels.pop
+
+      board.reduce
+      board.get_empty_count.must_equal 5 * 6 - 1
+      board[Coordinate.new(2,5)].type.must_equal :hyper
     end
   end
 
+  it "should return count of empty slots" do
+    board[Coordinate.new(0,0)] = Jewel.new(0)
+    board.get_empty_count.must_equal 5 * 6 - 1
+  end
 end
