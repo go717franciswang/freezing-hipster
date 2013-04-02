@@ -171,4 +171,13 @@ class Board
   def get_empty_count
     self.get_jewel_count(nil)
   end
+
+  def ==(board2)
+    self.each_coordinate do |coor|
+      if self[coor] != board2[coor]
+        return false
+      end
+    end
+    true
+  end
 end
