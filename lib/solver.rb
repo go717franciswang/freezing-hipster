@@ -9,7 +9,7 @@ class Solver
     @board_best_move = {}
   end
 
-  def best_move(board, level=10, clear_cache=true)
+  def best_move(board, level=1, clear_cache=true)
     best = nil
     best_score = 0
 

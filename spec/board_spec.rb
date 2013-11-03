@@ -177,8 +177,17 @@ describe "Board" do
     end
   end
 
-  it "should return fixnum from hash method" do
-    board.load('OOO')
-    board.hash.must_be_instance_of Fixnum
+  describe "hash method" do
+    it "should return fixnum" do
+      board.load('OOO')
+      board.hash.must_be_instance_of Fixnum
+    end
+
+    it "should return the same fixnum from different obj with same board" do
+      board.load('OOO')
+      board2 = board.clone
+      board.hash.must_equal board2.hash
+      board.object_id.wont_equal board2.object_id
+    end
   end
 end

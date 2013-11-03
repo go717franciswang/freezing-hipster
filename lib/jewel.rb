@@ -14,4 +14,18 @@ class Jewel
       false
     end
   end
+
+  def ===(jewel)
+    self.==(jewel) and @type == jewel.type
+  end
+
+  def to_s
+    if @type == :power
+      @color.to_s
+    elsif @type == :hyper
+      'H'
+    else
+      @color.to_s.upcase
+    end
+  end
 end

@@ -2,7 +2,7 @@ require "minitest/autorun"
 require_relative "../lib/board"
 require_relative "../lib/board_stringer"
 
-describe "BoardString" do
+describe "BoardStringer" do
   let(:board) { Board.new(5,6).extend BoardStringer }
 
   it "transform string into a board at the bottom" do

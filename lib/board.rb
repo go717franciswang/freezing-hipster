@@ -40,14 +40,21 @@ class Board
   def hash
     jewels = []
     self.each_coordinate do |coor|
-      jewels << self[coor]
+      jewels << self[coor].to_s
     end
     jewels.hash
   end
 
-  def eql?(other)
-    self.hash == other.hash
+  def ==(other)
+    self.each_coordinate do |coor|
+      unless self[coor] === other[coor]
+        return false
+      end
+    end
+    true
   end
+
+  alias eql? ==
 
   def [](coordinate)
     if coordinate and self.within_board(coordinate)
@@ -205,7 +212,7 @@ class Board
           self[new_hyper_jewel_coor].type = :hyper
           keep_set << new_hyper_jewel_coor
         else
-          raise "Cannot handle #{connected_range.length} connected jewels"
+          warn "Cannot handle #{connected_range.length} connected jewels"
         end
 
         @base_point += 10
@@ -273,15 +280,6 @@ class Board
     self.get_jewel_count(nil)
   end
 
-  def ==(board2)
-    self.each_coordinate do |coor|
-      if self[coor] != board2[coor]
-        return false
-      end
-    end
-    true
-  end
-
   def each_valid_move
     self.each_coordinate do |coor|
       if self[coor] and self[coor].type == :hyper
@@ -299,9 +297,17 @@ class Board
           c1, c2, c3 = pattern
           if self.valid_pattern?(pattern)
             if c2.x == c3.x
-              yield [c1, c1.dx(c2.x - c1.x)]
+              if c1.x == c2.x
+                yield [c1, c1.dy((c2.y - c1.y)/(c2.y - c1.y).abs)]
+              else
+                yield [c1, c1.dx(c2.x - c1.x)]
+              end
             else
-              yield [c1, c1.dy(c2.y - c1.y)]
+              if c1.y == c2.y
+                yield [c1, c1.dx((c2.x - c1.x)/(c2.x - c1.x).abs)]
+              else
+                yield [c1, c1.dy(c2.y - c1.y)]
+              end
             end
           end
         end
@@ -316,5 +322,22 @@ class Board
     else
       self[c1] == self[c2] and self[c2] == self[c3]
     end
+  end
+
+  def to_s
+    s = ''
+    self.each_coordinate do |coor|
+      if self[coor]
+        color = self[coor].color.to_s
+        if self[coor].type == :power
+          s += color
+        else
+          s += color.downcase
+        end
+      else
+        s += '.'
+      end
+    end
+    s
   end
 end
