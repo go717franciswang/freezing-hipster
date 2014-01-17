@@ -1,14 +1,15 @@
 require_relative "./jewel"
 require_relative "./coordinate"
 require "gtk2"
+require "securerandom"
 
 module BoardImager
 
-  def load_screen(x, y, w, h)
+  def load_screen(x, y, w, h, save_jewels_to=nil)
     pixbuf = Gdk::Pixbuf.from_drawable(
       nil, Gdk::Window.default_root_window, x, y, w, h, nil, 0, 0
     )
-    self.load(pixbuf)
+    self.load(pixbuf, save_jewels_to)
   end
 
   def load_file(filepath)
@@ -16,19 +17,30 @@ module BoardImager
     self.load(pixbuf)
   end
 
-  def load(pixbuf)
-    cell_width = pixbuf.width / @columns
-    cell_height = pixbuf.height / @rows
+  def load(pixbuf, save_jewels_to=nil)
+    cell_width = pixbuf.width.to_f / @columns
+    cell_height = pixbuf.height.to_f / @rows
     center_x = (cell_width / 2).to_i
     center_y = (cell_height / 2).to_i
     pixel_byte_count = pixbuf.rowstride / pixbuf.width
+
+    if save_jewels_to
+      (0..(@rows-1)).each do |r|
+        (0..(@columns-1)).each do |c|
+          jewelpix = Gdk::Pixbuf.new(pixbuf, c*cell_width, r*cell_height, cell_width, cell_height)
+          filename = File.join(save_jewels_to, "#{SecureRandom.uuid()}.png")
+          puts "storing jewel to #{filename}"
+          jewelpix.save filename, 'png'
+        end
+      end
+    end
 
     cell_pixel_samples = {}
     y = -1
     pixbuf.pixels.bytes.each_slice(pixbuf.rowstride) do |row|
       y += 1
       row_count = (y / cell_height).to_i
-      offset_y = (y - row_count * cell_height - center_y + 4).abs
+      offset_y = (y - row_count * cell_height - center_y + 4).abs.to_i
       unless offset_y % 3 == 0 and offset_y < 10 and row_count < @rows
         next
       end
@@ -37,7 +49,7 @@ module BoardImager
       row.each_slice(pixel_byte_count) do |pixel_bytes|
         x += 1
         col_count = (x / cell_width).to_i
-        offset_x = (x - col_count * cell_width - center_x).abs
+        offset_x = (x - col_count * cell_width - center_x).abs.to_i
 
         if offset_x % 3 == 0 and offset_x < 10 and col_count < @columns
           cell_pixel_samples[col_count] ||= {}

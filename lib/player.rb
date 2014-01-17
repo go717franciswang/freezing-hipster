@@ -3,7 +3,7 @@ require_relative "./board"
 require_relative "./board_imager"
 
 class Player
-  attr_accessor :tl_x, :tl_y, :br_x, :br_y, :columns, :rows
+  attr_accessor :tl_x, :tl_y, :br_x, :br_y, :columns, :rows, :save_training_data
 
   def initialize(tl_x, tl_y, br_x, br_y, columns, rows)
     @tl_x = tl_x
@@ -21,13 +21,24 @@ class Player
     @cell_height = @height / @rows
 
     @window = Gdk::Window.default_root_window
+
+    @save_training_data = false
   end
 
   def play
     solver = Solver.new
+    iterations = 0
+
     while true
       board = Board.new(@columns, @rows).extend BoardImager
-      board.load_screen(@tl_x, @tl_y, @width, @height)
+
+      save_jewels_to = nil
+      if @save_training_data and iterations % 100 == 0
+        puts "saving jewels"
+        save_jewels_to = File.join(File.dirname(__FILE__), '../spec/images/training-data')
+      end
+
+      board.load_screen(@tl_x, @tl_y, @width, @height, save_jewels_to)
 
       move, score = solver.best_move(board)
       if move
@@ -40,6 +51,8 @@ class Player
           break
         end
       end
+
+      iterations += 1
     end
   end
 
